@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data E-Commerce</title>
+</head>
+<body>
+    <h2>Uji Coba Upload CSV ke Database Lokal</h2>
+    
+    <form action="/upload" method="POST" enctype="multipart/form-data">
+        <label for="file">Pilih File CSV (Bisa pilih banyak sekaligus):</label><br><br>
+        <input type="file" name="files[]" multiple accept=".csv"><br><br>
+        <button type="submit">Upload & Jalankan ETL</button>
+    </form>
+</body>
+</html>
