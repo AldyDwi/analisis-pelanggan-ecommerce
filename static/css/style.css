@@ -1,0 +1,25 @@
+.sidebar-link {
+    transition: all 0.25s ease;
+        }
+
+        .sidebar-link:hover {
+            background: #f8fafc;
+            transform: translateX(4px);
+        }
+
+        .sidebar-link-active {
+            background: linear-gradient(to right, #eff6ff, #f0f9ff);
+            color: #0369a1;
+            border: 1px solid #dbeafe;
+        }
+
+        #dropArea {
+            transition: all 0.3s ease;
+        }
+
+        #dropArea.dragover {
+            background: #eff6ff;
+            border-color: #3b82f6;
+            transform: scale(1.01);
+
+                }

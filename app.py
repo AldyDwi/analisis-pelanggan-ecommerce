@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, flash
+from flask import Flask, render_template, request, redirect, jsonify
 import pandas as pd
 from sqlalchemy import create_engine
 from sqlalchemy.dialects.mysql import insert
@@ -13,6 +13,7 @@ app.config.from_object(Config)
 
 # Inisialisasi Engine Database
 engine_oltp = create_engine(app.config['SQLALCHEMY_OLTP_URI'])
+engine_star = create_engine(app.config['SQLALCHEMY_STAR_URI'])
 
 # Konfigurasi OCI Object Storage
 try:
@@ -121,6 +122,233 @@ def upload_files():
         return "Upload, Backup OCI, dan Proses ETL Berhasil!"
     except Exception as e:
         return f"Proses database berhasil, tapi ETL gagal: {str(e)}"
+
+@app.route('/api/dashboard')
+def api_dashboard():
+    try:
+        with engine_star.connect() as conn:
+
+            # Total transaksi
+            total_transaksi = pd.read_sql("""
+                SELECT COUNT(*) as total
+                FROM fact_sales
+            """, conn).iloc[0]['total']
+
+            # Total revenue
+            total_revenue = pd.read_sql("""
+                SELECT COALESCE(SUM(revenue), 0) as revenue
+                FROM fact_sales
+            """, conn).iloc[0]['revenue']
+
+            # Total produk terjual
+            total_qty = pd.read_sql("""
+                SELECT COALESCE(SUM(quantity), 0) as qty
+                FROM fact_sales
+            """, conn).iloc[0]['qty']
+
+            # Average rating
+            avg_rating = pd.read_sql("""
+                SELECT ROUND(AVG(review_score), 2) as avg
+                FROM fact_sales
+                WHERE review_score IS NOT NULL
+            """, conn).iloc[0]['avg']
+
+            # Tren bulanan
+            tren_bulanan = pd.read_sql("""
+                SELECT 
+                    DATE_FORMAT(d.full_date, '%%b') as bulan,
+                    COUNT(*) as total_transaksi
+                FROM fact_sales fs
+                JOIN dim_date d
+                    ON fs.date_id = d.date_id
+                GROUP BY DATE_FORMAT(d.full_date, '%%Y-%%m'), bulan
+                ORDER BY DATE_FORMAT(d.full_date, '%%Y-%%m') DESC
+                LIMIT 7
+            """, conn)
+
+            # Produk terlaris
+            produk_terlaris = pd.read_sql("""
+                SELECT 
+                    p.category_name_english AS product_name,
+                    SUM(fs.quantity) as total_terjual
+                FROM fact_sales fs
+                JOIN dim_product p
+                    ON fs.product_id = p.product_id
+                GROUP BY p.category_name_english
+                ORDER BY total_terjual DESC
+                LIMIT 5
+            """, conn)
+
+        return jsonify({
+            "status": "success",
+            "data": {
+                "total_transaksi": int(total_transaksi),
+                "total_revenue": float(total_revenue),
+                "total_produk_terjual": int(total_qty),
+                "avg_rating": float(avg_rating or 0),
+                "tren_bulanan": tren_bulanan.to_dict('records'),
+                "produk_terlaris": produk_terlaris.to_dict('records')
+            }
+        })
+
+    except Exception as e:
+        print("ERROR DASHBOARD:", str(e))
+
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        }), 500
+    try:
+        with engine_star.connect() as conn:
+
+            # Total transaksi
+            total_transaksi = pd.read_sql("""
+                SELECT COUNT(*) as total
+                FROM fact_sales
+            """, conn).iloc[0]['total']
+
+            # Total revenue
+            total_revenue = pd.read_sql("""
+                SELECT COALESCE(SUM(revenue), 0) as revenue
+                FROM fact_sales
+            """, conn).iloc[0]['revenue']
+
+            # Total produk terjual
+            total_qty = pd.read_sql("""
+                SELECT COALESCE(SUM(quantity), 0) as qty
+                FROM fact_sales
+            """, conn).iloc[0]['qty']
+
+            # Average rating
+            avg_rating = pd.read_sql("""
+                SELECT ROUND(AVG(review_score), 2) as avg
+                FROM fact_sales
+                WHERE review_score IS NOT NULL
+            """, conn).iloc[0]['avg']
+
+            # Tren bulanan
+            tren_bulanan = pd.read_sql("""
+                SELECT 
+                    DATE_FORMAT(d.full_date, '%%b') as bulan,
+                    COUNT(*) as total_transaksi
+                FROM fact_sales fs
+                JOIN dim_date d
+                    ON fs.date_id = d.date_id
+                GROUP BY DATE_FORMAT(d.full_date, '%%Y-%%m'), bulan
+                ORDER BY DATE_FORMAT(d.full_date, '%%Y-%%m') DESC
+                LIMIT 7
+            """, conn)
+
+            # Produk terlaris
+            produk_terlaris = pd.read_sql("""
+                SELECT 
+                    p.product_name,
+                    SUM(fs.quantity) as total_terjual
+                FROM fact_sales fs
+                JOIN dim_product p
+                    ON fs.product_id = p.product_id
+                GROUP BY p.product_name
+                ORDER BY total_terjual DESC
+                LIMIT 5
+            """, conn)
+
+        return jsonify({
+            "status": "success",
+            "data": {
+                "total_transaksi": int(total_transaksi),
+                "total_revenue": float(total_revenue),
+                "total_produk_terjual": int(total_qty),
+                "avg_rating": float(avg_rating or 0),
+                "tren_bulanan": tren_bulanan.to_dict('records'),
+                "produk_terlaris": produk_terlaris.to_dict('records')
+            }
+        })
+
+    except Exception as e:
+        print("ERROR DASHBOARD:", str(e))
+
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        }), 500
+    try:
+        with engine_star.connect() as conn:
+            # Statistik Utama
+            total_transaksi = pd.read_sql(
+                "SELECT COUNT(*) as total FROM fact_sales",
+                conn
+            ).iloc[0]['total']
+
+            # Total Revenue
+            revenue_query = """
+                SELECT COALESCE(SUM(price * quantity), 0) as revenue 
+                FROM fact_sales
+            """
+
+            try:
+                total_revenue = pd.read_sql(
+                    revenue_query,
+                    conn
+                ).iloc[0]['revenue']
+            except:
+                total_revenue = 0
+
+            # Total Quantity
+            total_qty = pd.read_sql(
+                "SELECT COALESCE(SUM(quantity), 0) as qty FROM fact_sales",
+                conn
+            ).iloc[0]['qty']
+
+            # Average Rating
+            avg_rating = pd.read_sql("""
+                SELECT ROUND(AVG(review_score), 2) as avg 
+                FROM fact_sales 
+                WHERE review_score IS NOT NULL
+            """, conn).iloc[0]['avg']
+
+            # Tren Bulanan
+            tren_bulanan = pd.read_sql("""
+                SELECT 
+                    DATE_FORMAT(order_date, '%%b') as bulan,
+                    COUNT(*) as total_transaksi
+                FROM fact_sales 
+                GROUP BY DATE_FORMAT(order_date, '%%Y-%%m'), bulan
+                ORDER BY DATE_FORMAT(order_date, '%%Y-%%m') DESC 
+                LIMIT 7
+            """, conn)
+
+            # Produk Terlaris
+            produk_terlaris = pd.read_sql("""
+                SELECT 
+                    p.product_name,
+                    SUM(fs.quantity) as total_terjual
+                FROM fact_sales fs
+                JOIN dim_product p 
+                    ON fs.product_id = p.product_id
+                GROUP BY p.product_name
+                ORDER BY total_terjual DESC
+                LIMIT 5
+            """, conn)
+
+        return jsonify({
+            "status": "success",
+            "data": {
+                "total_transaksi": int(total_transaksi),
+                "total_revenue": float(total_revenue),
+                "total_produk_terjual": int(total_qty),
+                "avg_rating": float(avg_rating or 0),
+                "tren_bulanan": tren_bulanan.to_dict('records'),
+                "produk_terlaris": produk_terlaris.to_dict('records')
+            }
+        })
+
+    except Exception as e:
+        print("ERROR DASHBOARD:", str(e))
+
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        }), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
