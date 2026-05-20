@@ -38,7 +38,19 @@ pip install -r requirements.txt
 
 ---
 
-## 4. Menjalankan Aplikasi
+## 4. Inisialisasi Database
+
+Sebelum menjalankan aplikasi utama, pastikan database (db_oltp dan db_starschema) beserta seluruh tabelnya sudah dibuat. Jalankan perintah berikut:
+
+```bash
+python init_db.py
+```
+
+(Catatan: Pastikan Anda sudah menyesuaikan IP, username, dan password database di dalam file config.py sebelum menjalankan perintah ini).
+
+---
+
+## 5. Menjalankan Aplikasi
 
 Jalankan file `app.py` dengan perintah:
 
