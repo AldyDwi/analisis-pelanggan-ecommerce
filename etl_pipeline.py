@@ -42,13 +42,18 @@ def run_etl_process():
 
         # 4. Mengisi Tabel Fakta Penjualan
         query_fact_sales = text("""
-            INSERT IGNORE INTO db_starschema.fact_sales (order_id, product_id, customer_id, date_id, revenue, quantity)
+            INSERT IGNORE INTO db_starschema.fact_sales (order_id, product_id, customer_id, date_id, revenue, quantity, review_score)
             SELECT 
-                i.order_id, i.product_id, o.customer_id, 
+                i.order_id, 
+                i.product_id, 
+                o.customer_id, 
                 DATE_FORMAT(o.order_purchase_timestamp, '%Y%m%d'),
-                (i.price + i.freight_value), 1
+                (i.price + i.freight_value), 
+                1,
+                r.review_score
             FROM db_oltp.order_items i
             JOIN db_oltp.orders o ON i.order_id = o.order_id
+            LEFT JOIN db_oltp.order_reviews r ON i.order_id = r.order_id
         """)
         conn.execute(query_fact_sales)
         
