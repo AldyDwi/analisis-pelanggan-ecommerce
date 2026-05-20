@@ -99,8 +99,8 @@ def upload_files():
             df = pd.read_csv(file)
             table_name = file_to_table[file.filename]
             
-            # Menggunakan method=mysql_upsert agar tidak error saat ada data ganda
-            df.to_sql(table_name, con=engine_oltp, if_exists='append', index=False, method=mysql_upsert)
+            # Menggunakan method=mysql_upsert agar tidak error saat ada data ganda dan tambah parameter chunksize biar tidak langsung load semua data ke memory, tapi per batch 10.000 baris
+            df.to_sql(table_name, con=engine_oltp, if_exists='append', index=False, method=mysql_upsert, chunksize=10000)
             print(f"Berhasil Upsert {file.filename} ke tabel {table_name}")
 
     # Setelah semua file OLTP masuk, jalankan proses ETL
