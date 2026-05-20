@@ -14,17 +14,29 @@ app.config.from_object(Config)
 # Inisialisasi Engine Database
 engine_oltp = create_engine(app.config['SQLALCHEMY_OLTP_URI'])
 
-# Konfigurasi OCI Object Storage (Gunakan Try-Except agar Dummy Test lokal tidak terganggu)
+# Konfigurasi OCI Object Storage
 try:
-    # Jika di lokal, ini akan membaca file konfigurasi OCI CLI (~/.oci/config)
-    # Jika di server nantinya, kita akan ubah menggunakan Instance Principals
-    oci_config = oci.config.from_file()
-    object_storage_client = oci.object_storage.ObjectStorageClient(oci_config)
+    # Mengecek apakah kita sedang di VM Production (dari docker-compose environment)
+    USE_INSTANCE_PRINCIPAL = os.environ.get('USE_INSTANCE_PRINCIPAL', 'False') == 'True'
+
+    if USE_INSTANCE_PRINCIPAL:
+        # MODE PRODUKSI (VM ORACLE): Menggunakan identitas VM tanpa file config
+        signer = oci.auth.signers.InstancePrincipalsSecurityTokenSigner()
+        object_storage_client = oci.object_storage.ObjectStorageClient(config={}, signer=signer)
+        print("Berhasil terhubung ke OCI menggunakan Instance Principals.")
+    else:
+        # MODE LOKAL (LAPTOP): Membaca file ~/.oci/config yang di-mount ke dalam Docker
+        # Karena di dalam Docker berjalan sebagai root, lokasinya ada di /root/.oci/config
+        oci_config = oci.config.from_file("/root/.oci/config", "DEFAULT")
+        object_storage_client = oci.object_storage.ObjectStorageClient(oci_config)
+        print("Berhasil terhubung ke OCI menggunakan File Konfigurasi Lokal.")
+
     NAMESPACE = object_storage_client.get_namespace().data
     BUCKET_NAME = "ecommerce-raw-data"
     OCI_AVAILABLE = True
+
 except Exception as e:
-    print(f"Peringatan: Koneksi OCI Object Storage belum dikonfigurasi di lokal. ({e})")
+    print(f"Peringatan: Koneksi OCI Object Storage belum siap/gagal. ({e})")
     OCI_AVAILABLE = False
 
 # Fungsi Bantuan untuk melakukan Upsert di MySQL

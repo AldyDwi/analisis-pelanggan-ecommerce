@@ -14,9 +14,9 @@ def initialize_databases():
             conn.execute(text("CREATE DATABASE IF NOT EXISTS db_oltp;"))
             conn.execute(text("CREATE DATABASE IF NOT EXISTS db_starschema;"))
             conn.commit()
-        print("✔ Database db_oltp dan db_starschema siap atau sudah ada.")
+        print("Database db_oltp dan db_starschema siap atau sudah ada.")
     except Exception as e:
-        print(f"❌ Gagal membuat database utama: {e}")
+        print(f"Gagal membuat database utama: {e}")
         return
 
     # ==========================================
@@ -160,9 +160,9 @@ def initialize_databases():
                 if statement.strip():
                     conn.execute(text(statement))
             conn.commit()
-        print("✔ Seluruh tabel pada 'db_oltp' berhasil dibuat.")
+        print("Seluruh tabel pada 'db_oltp' berhasil dibuat.")
     except Exception as e:
-        print(f"❌ Gagal membuat tabel pada db_oltp: {e}")
+        print(f"Gagal membuat tabel pada db_oltp: {e}")
 
     # Eksekusi skrip tabel db_starschema
     try:
@@ -173,9 +173,9 @@ def initialize_databases():
                 if statement.strip():
                     conn.execute(text(statement))
             conn.commit()
-        print("✔ Seluruh tabel pada 'db_starschema' berhasil dibuat.")
+        print("Seluruh tabel pada 'db_starschema' berhasil dibuat.")
     except Exception as e:
-        print(f"❌ Gagal membuat tabel pada db_starschema: {e}")
+        print(f"Gagal membuat tabel pada db_starschema: {e}")
 
     print("Proses inisialisasi selesai.")
 

@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    container_name: ecommerce_flask_prod
+    restart: always
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mysql-db
+    environment:
+      - DB_HOST=mysql-db
+      - USE_INSTANCE_PRINCIPAL=True
+  
+  mysql-db:
+    image: mysql:8.0
+    container_name: ecommerce_mysql_prod
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: Tugascloud123
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+volumes:
+  mysql-data:
+
+
