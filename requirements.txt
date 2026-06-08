@@ -6,3 +6,4 @@ gunicorn==21.2.0
 werkzeug==3.0.1
 oci==2.115.0
 numpy==1.26.4
+hdfs==2.7.3
