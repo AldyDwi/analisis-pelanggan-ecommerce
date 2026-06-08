@@ -1,0 +1,60 @@
+services:
+  web:
+    build: .
+    container_name: apps
+    restart: always
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mysql-db
+      - namenode
+    environment:
+      - DB_HOST=mysql-db
+      - USE_INSTANCE_PRINCIPAL=False
+      - HDFS_URL=http://namenode:9870
+      - HDFS_USER=root
+    volumes:
+      - ./logs:/app/logs
+
+  mysql-db:
+    image: mysql:8.0
+    container_name: db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: Tugascloud123
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+  namenode:
+    image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
+    container_name: namenode
+    restart: always
+    environment:
+      - CLUSTER_NAME=test
+    env_file:
+      - ./hadoop.env
+    ports:
+      - "9870:9870"
+      - "9000:9000"
+    volumes:
+      - hadoop_namenode:/hadoop/dfs/name
+
+  datanode:
+    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
+    container_name: datanode
+    restart: always
+    environment:
+      - SERVICE_PRECONDITION=namenode:9870
+    env_file:
+      - ./hadoop.env
+    volumes:
+      - hadoop_datanode:/hadoop/dfs/data
+
+volumes:
+  mysql-data:
+  hadoop_namenode:
+  hadoop_datanode:
+
+

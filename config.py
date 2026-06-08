@@ -38,3 +38,7 @@ class Config:
     
     SQLALCHEMY_OLTP_URI = f"mysql+pymysql://{DB_USER}:{DB_PASS}@{DB_HOST}/db_oltp"
     SQLALCHEMY_STAR_URI = f"mysql+pymysql://{DB_USER}:{DB_PASS}@{DB_HOST}/db_starschema"
+
+    # HDFS Configuration
+    HDFS_URL = os.environ.get('HDFS_URL', 'http://localhost:9870')
+    HDFS_USER = os.environ.get('HDFS_USER', 'root')
