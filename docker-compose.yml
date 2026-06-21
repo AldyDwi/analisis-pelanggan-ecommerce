@@ -1,6 +1,6 @@
 services:
   web:
-    build: .
+    image: aldydwinur/analisis-pelanggan-ecommerce:latest
     container_name: apps
     restart: always
     ports:
@@ -10,7 +10,7 @@ services:
       - namenode
     environment:
       - DB_HOST=mysql-db
-      - USE_INSTANCE_PRINCIPAL=False
+      - USE_INSTANCE_PRINCIPAL=True
       - HDFS_URL=http://namenode:9870
       - HDFS_USER=root
     volumes:
