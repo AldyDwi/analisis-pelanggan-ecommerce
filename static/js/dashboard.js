@@ -38,7 +38,7 @@ function switchPage(page) {
                     <div class="bg-white rounded-3xl p-7 border border-slate-100 shadow-sm">
                         <div class="flex justify-between items-start">
                             <div>
-                                <p class="text-slate-500">Total Revenue</p>
+                                <p class="text-slate-500">Total Pendapatan</p>
                               <h3 class="text-3xl font-bold mt-3 whitespace-nowrap overflow-hidden text-ellipsis">
     Rp ${(d.total_revenue/1000000).toFixed(2)}M
 </h3>
